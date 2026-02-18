@@ -1,7 +1,7 @@
---USE MIST460DatBase; 
+USE MIST460DataBase; 
 
 go
-
+select * from Major;
 -- Major rows
 
 INSERT INTO Major (MajorName) VALUES
@@ -12,7 +12,7 @@ INSERT INTO Major (MajorName) VALUES
  (N'Finance');
 
 go
-
+select * from Course;
 -- Course rows
 
 INSERT INTO Course 
@@ -141,11 +141,12 @@ N'This course examines entrepreneurship as a vehicle for social change and susta
 go
 
 -- Prerequisite rows
+select * from 
 
  go
-
+select * from AppUser;
  -- AppUser rows
-
+select * from AppUser;
  -- Students (12)
 
 INSERT INTO AppUser (Firstname, LastName, Email, PasswordHash, UserRole)
