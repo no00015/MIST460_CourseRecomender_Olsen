@@ -1,3 +1,8 @@
+Create user FK_Advisor_AppUser
+For Login APILogin;
+
+Grant Execute to APIUser;
+
 /*--1
 select *
 from Section as S
