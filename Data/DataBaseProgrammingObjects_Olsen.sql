@@ -17,6 +17,23 @@ inner join Course as C on S.CourseID = C.CourseID
 where R.StudentID = @StudentID and C.CourseID = @CourseID and R.EnrollmentStatus = 'Completed';
 */
 
+
+create or alter procedure GetCourseSectionsForSpecifiedCourse
+(
+    @SubjectCode nvarchar(15) = null,
+    @CourseNumber nvarchar(15) = null
+)
+As BEGIN
+
+select C.SubjectCode, C.CourseNumber, C.Title, S.SectionID, S.SectionSemester, S.SectionYear, S.CRN, S.RemainingOpenings, S.SectionNumber, I.FirstName + '' + I.LastName as InstructorName
+from Section as S
+inner join Course as C on S.CourseID = C.CourseID
+inner join Instructor as I on S.InstructorID = I.InstructorID
+where S.SectionSemester = dbo.fnGetSemesterFromMonth()
+and S.SectionYear = Year(GetDate())
+and C.SubjectCode = ISNULL(@SubjectCode, C.SubjectCode)
+and C.CourseNumber = ISNULL(@CourseNumber, C.CourseNumber);
+
 GO
 
 create or alter function fnGetStudentCourseHistory
@@ -56,13 +73,15 @@ BEGIN
 Create or ALTER function fnGetCoursePrerequisites
 (
     @SubjectCode NVARCHAR(30) = NULL,
-    @CourseNumber NVARCHAR(30) = NULL
+    @CourseNumber NVARCHAR(30) = NULL,
+    @MinimumGrade NVARCHAR(2) = NULL
 )
 returns @Prerequisites TABLE
 (
     Title NVARCHAR(100),
     SubjectCode NVARCHAR(30),
-    CourseNumber NVARCHAR(30)
+    CourseNumber NVARCHAR(30),
+    PrerequisitesGrade NVARCHAR(2)
 )
 as 
 BEGIN
