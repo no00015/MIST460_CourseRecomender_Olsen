@@ -42,9 +42,9 @@ create or alter function fnGetStudentCourseHistory
 )
 RETURNS @CourseHistory TABLE
 (
-    SubjectCode nvarchar(10)
+    SubjectCode nvarchar(10),
     CourseNumber nvarchar(10),
-    Grade nchar(2)
+    Grade nvarchar(2)
 )
 AS
 BEGIN
@@ -95,3 +95,14 @@ BEGIN
 where 
     MainCourse.SubjectCode = ISNULL(@SubjectCode, MainCourse.SubjectCode) and MainCourse.CourseNumber = ISNULL(@CourseNumber, MainCourse.CourseNumber);
 END;
+
+--Links together tables to compare if our grade in a class is greater than the minimum grade required
+Select Prerequisetes.SubjectCode, Prerequisetites.CourseNumber, Prerequisites.MinGradeRequired
+From fnGetCoursePrerequisites(@SubjectCode, @CourseNumber) as Prerequisites
+Where not exists (
+    Select 1
+    From fnGetStudentCourseHistory(@StudentID) as History
+    Where Prerequisites.SubjectCode = History.SubjectCode
+    and Prerequisites.CourseNumber = History.CourseNumber
+    and dbo.fnGradePointsFromLetterGrade(History.Grade) >= dbo.fnGradePointsFromLetterGrade(Prerequisites.MinGradeRequired)
+);
