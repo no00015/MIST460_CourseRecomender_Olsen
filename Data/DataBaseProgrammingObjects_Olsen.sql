@@ -3,6 +3,13 @@ For Login APILogin;
 
 Grant Execute to APIUser;
 
+
+python -m venv .venv
+
+.venv\Scripts\activate
+
+pip install pyodbc fastapi python-dotenv uvicorn
+
 /*--1
 select *
 from Section as S

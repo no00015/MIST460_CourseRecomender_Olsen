@@ -1,6 +1,7 @@
 use MIST460_RDB_Olsen; 
 
 
+
 -- Order matters (Why?)
 
 IF OBJECT_ID('RegistrationSection') IS NOT NULL DROP TABLE RegistrationSection;
