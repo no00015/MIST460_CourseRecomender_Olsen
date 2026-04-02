@@ -1,4 +1,4 @@
-USE MIST460_RDB_Olsen;
+--USE MIST460_RDB_Lastname;
 
 go
 
@@ -359,6 +359,3 @@ VALUES
 (12, 12, N'Completed', N'C'),
 (13, 7, N'Enrolled', N'B'),
 (14, 8, N'Enrolled', N'C');
-
--- select * from RegistrationSection;
-
