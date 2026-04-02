@@ -14,7 +14,7 @@ pip install pyodbc fastapi python-dotenv uvicorn
 select *
 from Section as S
 inner join Course as C on S.CourseID = C.CourseID
-where SemesterYear = 2026 and SectionSemester = Spring;
+where SemesterYear = 2026 and SectionSemester = 'Spring';
 --2 What are the prerequisites for a specific, course (optional entry)?
 select *
 from CoursePrerequisite as CP
@@ -31,7 +31,7 @@ where R.StudentID = @StudentID and C.CourseID = @CourseID and R.EnrollmentStatus
 
 
 IF OBJECT_ID('procGetCourseSectionsForSpecifiedCourse') IS Not NULL
-drop procedure GetCourseSectionsForSpecifiedCourse;
+drop procedure procGetCourseSectionsForSpecifiedCourse;
 
 IF OBJECT_ID('fnGetSemesterFromMonth') IS Not NULL
 Drop function fnGetSemesterFromMonth;
@@ -74,7 +74,7 @@ END;
 
 GO
 
-create or alter function functionGetCourseSectionsForSpecifiedCourse
+create or alter procedure procGetCourseSectionsForSpecifiedCourse
 (
     @SubjectCode nvarchar(15) = null,
     @CourseNumber nvarchar(15) = null
@@ -90,8 +90,9 @@ and S.SectionYear = Year(GetDate())
 and C.SubjectCode = ISNULL(@SubjectCode, C.SubjectCode)
 and C.CourseNumber = ISNULL(@CourseNumber, C.CourseNumber);
 
+return;
 END;
-
+-- execute procGetCourseSectionsForSpecifiedCourse
 GO
 
 create or alter procedure procGetCoursePrerequisites
@@ -106,9 +107,9 @@ BEGIN
         END;
     SELECT 
         prereq.Title AS 'PrerequisiteTitle', prereq.SubjectCode AS 'PrerequisiteSubjectCode', prereq.CourseNumber AS 'PrerequisiteCourseNumber', MainCourse.Title AS 'MainCourseTitle', MainCourse.SubjectCode AS 'MainCourseSubjectCode', MainCourse.CourseNumber AS 'MainCourseNumber', CP.MinGradeRequired AS 'MinimumGradeRequired'
-    FROM CoursePrerequisite AS p
-    JOIN Course MainCourse ON p.CourseID = MainCourse.CourseID
-    JOIN Course prereq ON p.PrerequisiteID = prereq.CourseID
+    FROM CoursePrerequisite AS CP
+    JOIN Course MainCourse ON CP.CourseID = MainCourse.CourseID
+    JOIN Course prereq ON CP.PrerequisiteID = prereq.CourseID
     WHERE 
         MainCourse.SubjectCode = ISNULL(@SubjectCode, MainCourse.SubjectCode) 
         AND MainCourse.CourseNumber = ISNULL(@CourseNumber, MainCourse.CourseNumber);
@@ -118,7 +119,8 @@ GO
 create or alter function fnGetCoursePrerequisites
 (
     @SubjectCode NVARCHAR(30) = NULL,
-    @CourseNumber NVARCHAR(30) =
+    @CourseNumber NVARCHAR(30) = NULL,
+    @MinimumGrade NVARCHAR(2) = NULL
 )
 returns @Prerequisites TABLE
 (
@@ -141,10 +143,12 @@ where
     return;
 END;
 
+GO
 create or alter function fnGetStudentCourseHistory
 (
-    @StudentID INT,
+    @StudentID INT
 )
+
 RETURNS @CourseHistory TABLE
 (
     SubjectCode nvarchar(10),
@@ -166,7 +170,7 @@ BEGIN
         return;
 END;
 
-
+GO
 create or alter function fnGradePointsFromLetterGrade
 (
     @LetterGrade NVARCHAR(2)
@@ -222,14 +226,10 @@ select
         BEGIN
             RAISERROR('SubjectCode provided without CourseNumber. Please provide both or neither.', 16, 1);
             RETURN;
-        END
+        END;
 
-Create or ALTER function fnGetCoursePrerequisites
-(
-    @SubjectCode NVARCHAR(30) = NULL,
-    @CourseNumber NVARCHAR(30) = NULL,
-    @MinimumGrade NVARCHAR(2) = NULL
-)
+GO
+
 returns @Prerequisites TABLE
 (
     Title NVARCHAR(100),
@@ -240,7 +240,7 @@ returns @Prerequisites TABLE
 as 
 BEGIN
     insert into @prerequisites
-    (Title, SubjectCode, CourseNumber)
+    (Title, SubjectCode, CourseNumber, MinGradeRequired)
     select 
         prereq.Title, prereq.SubjectCode, prereq.CourseNumber
     from CoursePrerequisite as CP
@@ -251,7 +251,7 @@ where
 END;
 
 --Links together tables to compare if our grade in a class is greater than the minimum grade required
-Select Prerequisetes.SubjectCode, Prerequisetites.CourseNumber, Prerequisites.MinGradeRequired
+Select Prerequisites.SubjectCode, Prerequisites.CourseNumber, Prerequisites.MinGradeRequired
 From fnGetCoursePrerequisites(@SubjectCode, @CourseNumber) as Prerequisites
 Where not exists (
     Select 1

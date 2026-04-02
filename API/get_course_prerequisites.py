@@ -1,4 +1,4 @@
-from get_db_connection
+from get_db_connection import get_db_connection
 
 def get_course_prerequisites(
     subject_code: str = None,
@@ -11,8 +11,7 @@ def get_course_prerequisites(
     conn.close()
 
     results = [
-    for row in rows:
-        results.append({
+        {
             "MainCourseTitle": row.MainCourseTitle,
             "MainCourseSubjectCode": row.MainCourseSubjectCode,
             "MainCourseNumber": row.MainCourseNumber,
@@ -20,6 +19,7 @@ def get_course_prerequisites(
             "PrerequisiteSubjectCode": row.PrerequisiteSubjectCode,
             "PrerequisiteCourseNumber": row.PrerequisiteCourseNumber,
             "MinGradeRequired": row.MinGradeRequired
-        })
+        }
+        for row in rows
     ]
     return {"data": results}

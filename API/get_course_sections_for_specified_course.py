@@ -1,4 +1,4 @@
-from get_db_connection import
+from get_db_connection import get_db_connection
 
 def get_course_sections_for_specified_course(
     subject_code: str = None,
