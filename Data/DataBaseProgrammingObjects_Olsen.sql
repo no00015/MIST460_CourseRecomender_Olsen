@@ -368,7 +368,7 @@ create or alter procedure procValidateUser
 (@username nvarchar(320), @password nvarchar(100))
 as
 begin
-	select AppUserID, Firstname + ' ' + Lastname as Fullname
+	select AppUserID as AppUserID, Firstname + ' ' + Lastname as Fullname
 	from AppUser
 	where Email = @username and
 		PasswordHash = CONVERT(VARBINARY(64), @password, 1)
