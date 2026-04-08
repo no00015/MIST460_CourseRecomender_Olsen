@@ -1,4 +1,5 @@
 import streamlit as st
+
 from fetch_data import fetch_data
 
 def validate_user_ui():

@@ -1,3 +1,4 @@
+from turtle import st
 import streamlit as st
 from fetch_data import fetch_data
 

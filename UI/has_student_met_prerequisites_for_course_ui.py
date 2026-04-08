@@ -1,4 +1,5 @@
 import streamlit as st
+
 from fetch_data import fetch_data
 
 def has_student_met_prerequisites_for_course_ui():
