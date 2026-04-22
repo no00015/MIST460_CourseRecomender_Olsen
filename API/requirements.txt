@@ -2,6 +2,7 @@ gunicorn
 fastapi
 uvicorn[standard]
 python-dotenv
+pyodbc
 pymssql
 langchain
 langchain-openai

@@ -8,6 +8,8 @@ on:
   push:
     branches:
       - main
+    paths:
+      - "API/**"
   workflow_dispatch:
 
 jobs:
@@ -38,7 +40,7 @@ jobs:
         with:
           name: python-app
           path: |
-            .
+            API/
             !antenv/
 
       # 🚫 Opting Out of Oryx Build
