@@ -1,21 +1,22 @@
+
+
 IF OBJECT_ID('RegistrationSection') IS NOT NULL DROP TABLE RegistrationSection;
 IF OBJECT_ID('Registration') IS NOT NULL DROP TABLE Registration;
 IF OBJECT_ID('Section') IS NOT NULL DROP TABLE Section;
 IF OBJECT_ID('Instructor') IS NOT NULL DROP TABLE Instructor;
-if OBJECT_ID('CoursePrerequisite') IS NOT NULL DROP TABLE CoursePrerequisite;
+If OBJECT_ID('CoursePrerequisite') IS NOT NULL DROP TABLE CoursePrerequisite;
+IF OBJECT_ID('Chunks')        IS NOT NULL DROP TABLE Chunks;
 IF OBJECT_ID('Course')         IS NOT NULL DROP TABLE Course;
 IF OBJECT_ID('Major')         IS NOT NULL DROP TABLE Major;
 IF OBJECT_ID('Alum')           IS NOT NULL DROP TABLE Alum;
 IF OBJECT_ID('Advisor')     IS NOT NULL DROP TABLE Advisor;
 IF OBJECT_ID('Student')        IS NOT NULL DROP TABLE Student;
 IF OBJECT_ID('AppUser')        IS NOT NULL DROP TABLE AppUser;
-
--- create CoursePrerequisite table
--- create Registration
--- create RegistrationSection
+IF OBJECT_ID('Job')           IS NOT NULL DROP TABLE Job;
 
 
 GO
+
 
 CREATE TABLE AppUser (
     AppUserID       INT IDENTITY(1,1) 
@@ -25,20 +26,13 @@ CREATE TABLE AppUser (
     Email           NVARCHAR(100)  NOT NULL 
         CONSTRAINT UK_AppUser_Email UNIQUE,
     PhoneNumber     NVARCHAR(20)   NULL,
-    PasswordHash    VARBINARY(256)  NOT NULL,      -- store salted hash
+    PasswordHash    VARBINARY(256)  NOT NULL,     
     UserRole        NVARCHAR(20)   NOT NULL
         CONSTRAINT CK_AppUser_UserRole CHECK (UserRole IN (N'Student', N'Advisor',N'Alum')
     )
 );
 GO
 
-/*
-alter table AppUser
-	nocheck constraint CK_AppUser_UserRole;
-
-alter table AppUser
-	check constraint CK_AppUser_UserRole;
-*/
 
 CREATE TABLE Student (
     StudentID               INT 
@@ -72,6 +66,14 @@ CREATE TABLE Alum (
 );
 GO
 
+CREATE TABLE Job (
+    JobID           INT IDENTITY(1,1) CONSTRAINT PK_Job PRIMARY KEY,
+    JobTitle  NVARCHAR(MAX) NOT NULL,
+    Industry        NVARCHAR(100) NULL,
+	JobDescription NVARCHAR(MAX) NULL
+);
+
+GO
 
 CREATE TABLE Major (
     MajorID     INT IDENTITY(1,1) CONSTRAINT PK_Major PRIMARY KEY,
@@ -81,8 +83,8 @@ GO
 
 CREATE TABLE Course (
     CourseID        INT IDENTITY(1,1) CONSTRAINT PK_Course PRIMARY KEY,
-    SubjectCode     NVARCHAR(10)   NOT NULL,      -- e.g., 'MIST'
-    CourseNumber    NVARCHAR(10)   NOT NULL,      -- e.g., '460'
+    SubjectCode     NVARCHAR(10)   NOT NULL,      
+    CourseNumber    NVARCHAR(10)   NOT NULL,      
     Title           NVARCHAR(200)  NOT NULL,
     CourseDescription     NVARCHAR(MAX)  NULL,
     Credits         DECIMAL(4,1)   NOT NULL CONSTRAINT DF_Course_Credits DEFAULT (3.0),
@@ -92,6 +94,16 @@ CREATE TABLE Course (
 );
 GO
 
+CREATE TABLE Chunks (
+    ChunkID INT IDENTITY(1,1) CONSTRAINT PK_Chunks PRIMARY KEY,
+    CourseChunk NVARCHAR(MAX) NOT NULL,
+    ChunkEmbedding VECTOR(1536) NOT NULL,
+    CourseID INT NOT NULL
+        CONSTRAINT FK_Chunks_Course FOREIGN KEY (CourseID) REFERENCES Course(CourseID)
+);
+
+
+GO
 
 create table Instructor (
     InstructorID int identity(1,1) not null,
@@ -107,7 +119,7 @@ CREATE TABLE Section (
     CourseID                    INT NOT NULL,
     InstructorID                INT NOT NULL,
     CRN                         NCHAR(5) NOT NULL,
-    SectionSemester      NVARCHAR(12) NOT NULL, -- 'Spring','Summer','Fall','Winter'
+    SectionSemester      NVARCHAR(12) NOT NULL, 
     SectionYear          int NOT NULL,
     SectionNumber               NVARCHAR(10) NULL,
     RemainingOpenings           INT NOT NULL CONSTRAINT DF_Section_Seats DEFAULT (0),
@@ -127,9 +139,9 @@ create table CoursePrerequisite (
     CoursePrerequisiteID int identity(1,1) not null
         CONSTRAINT PK_CoursePrerequisite PRIMARY KEY,
     CourseID int not null
-        CONSTRAINT FK_CP_Course FOREIGN KEY (CourseID) REFERENCES Course(CourseID),-- ON DELETE CASCADE,
+        CONSTRAINT FK_CP_Course FOREIGN KEY (CourseID) REFERENCES Course(CourseID),
     PrerequisiteID int not null
-        CONSTRAINT FK_CP_PrerequisiteCourse FOREIGN KEY (PrerequisiteID) REFERENCES Course(CourseID),-- ON DELETE CASCADE,
+        CONSTRAINT FK_CP_PrerequisiteCourse FOREIGN KEY (PrerequisiteID) REFERENCES Course(CourseID),
     constraint UK_CoursePrerequisite UNIQUE(CourseID, PrerequisiteID),
     MinGradeRequired nchar(2) not null
         constraint CK_CoursePrerequisite_Grade CHECK (MinGradeRequired IN (N'A', N'B', N'C', N'D'))  

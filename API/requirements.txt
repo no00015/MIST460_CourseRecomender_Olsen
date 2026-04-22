@@ -1,0 +1,9 @@
+gunicorn
+fastapi
+uvicorn[standard]
+python-dotenv
+pymssql
+langchain
+langchain-openai
+langchain-text-splitters
+langgraph

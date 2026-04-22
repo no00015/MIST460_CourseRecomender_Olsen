@@ -9,9 +9,11 @@ def get_course_sections_for_specified_course(
     conn = get_db_connection()
     
     cursor = conn.cursor(as_dict=True)
-   
+    
+
     cursor.execute("EXEC procGetCourseSectionsForSpecifiedCourse %s, %s", (subject_code, course_number))
     
+
     try:
         rows = cursor.fetchall()
     except pymssql.Error:
